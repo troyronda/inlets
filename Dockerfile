@@ -1,4 +1,7 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.13-alpine as builder
+FROM alpine:latest as certs
+RUN apk --update add ca-certificates
+
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.15-alpine as builder
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -37,7 +40,7 @@ ARG REPO_URL
 LABEL org.opencontainers.image.source $REPO_URL
 
 COPY --from=builder /etc/passwd /etc/group /etc/
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/bin/inlets /usr/bin/
 
 USER app
